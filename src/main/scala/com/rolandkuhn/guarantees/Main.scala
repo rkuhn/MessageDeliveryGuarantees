@@ -40,7 +40,7 @@ package com.rolandkuhn.guarantees {
     implicit val timeout = Timeout(10.seconds)
     import sysA.dispatcher
 
-    sysB.actorOf(Props(new Receiver), "receiver")
+    val receiver = sysB.actorOf(Props(new Receiver), "receiver")
 
     // make sure that remoting works
     val recvPath = RootActorPath(addressB) / "user" / "receiver"
@@ -65,7 +65,10 @@ package com.rolandkuhn.guarantees {
             case ex: Throwable => s"missing                 ($word)"
           })
 
-    Future.sequence(futures) map (_.mkString("\n  ", "\n  ", "\n")) onComplete { x =>
+    Future.sequence(futures) map (_.mkString("\n  ", "\n  ", "\n")) flatMap { x =>
+      println(x)
+      receiver ? Receiver.GetText
+    } onComplete { x =>
       println(x)
       sysB.shutdown()
       sysA.shutdown()
