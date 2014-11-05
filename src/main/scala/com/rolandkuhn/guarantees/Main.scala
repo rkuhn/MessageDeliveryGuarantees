@@ -37,7 +37,7 @@ package com.rolandkuhn.guarantees {
     val sysA = system(addressA)
     val sysB = system(addressB)
 
-    implicit val timeout = Timeout(15.seconds)
+    implicit val timeout = Timeout(10.seconds)
     import sysA.dispatcher
 
     sysB.actorOf(Props(new Receiver), "receiver")
@@ -51,7 +51,7 @@ package com.rolandkuhn.guarantees {
 
     val send = sysA.actorOf(Props(new Sender(recv)), "sender")
 
-    Await.result(TestConductor(sysA).transport.managementCommand(DropIt(addressB, 0.3)), 5.seconds)
+    Await.result(TestConductor(sysA).transport.managementCommand(DropIt(addressB, 0.2)), 5.seconds)
 
     val futures =
       "The quick brown fox jumps over the lazy dog"
