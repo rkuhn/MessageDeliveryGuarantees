@@ -49,7 +49,7 @@ package com.rolandkuhn.guarantees {
         case ActorIdentity(42, Some(ref)) => ref
       }, 1.second)
 
-    val send = sysA.actorOf(Props(new Sender(recv)), "sender")
+    val sender = sysA.actorOf(Props(new Sender(recv)), "sender")
 
     Await.result(TestConductor(sysA).transport.managementCommand(DropIt(addressB, 0.2)), 5.seconds)
 
@@ -57,8 +57,8 @@ package com.rolandkuhn.guarantees {
       "The quick brown fox jumps over the lazy dog"
         .split(' ').toList
         .map(word =>
-          send ? Sender.Send(word) flatMap {
-            case s: Sender.Sent => send ? Sender.AwaitConfirmation(s.confirmationId)
+          sender ? Sender.Send(word) flatMap {
+            case s: Sender.Sent => sender ? Sender.AwaitConfirmation(s.confirmationId)
           } map {
             case _ => s"confirmed: $word"
           } recover {
