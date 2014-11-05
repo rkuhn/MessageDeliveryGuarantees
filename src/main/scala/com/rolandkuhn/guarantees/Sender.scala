@@ -10,6 +10,8 @@ import akka.actor.Identify
 import akka.actor.ActorIdentity
 import akka.actor.Stash
 import akka.actor.ReceiveTimeout
+import scala.util.control.NoStackTrace
+import scala.util.Random
 
 object Sender {
   case class Send(text: String)
@@ -24,6 +26,9 @@ class Sender(target: ActorRef) extends PersistentActor with AtLeastOnceDelivery 
   import context.dispatcher
 
   def log(msg: String) = println(s"[${LocalDateTime.now}] send: $msg")
+
+  val rnd = new Random
+  def fail() = if (rnd.nextDouble() < 0.2) throw new Exception("KABOOM!") with NoStackTrace
 
   override def persistenceId = "sender"
   override def redeliverInterval = 1.second
