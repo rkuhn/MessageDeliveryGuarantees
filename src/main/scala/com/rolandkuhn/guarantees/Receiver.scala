@@ -4,6 +4,8 @@ import akka.persistence.PersistentActor
 import java.time.LocalDateTime
 import scala.util.control.NoStackTrace
 import scala.util.Random
+import akka.actor.Actor
+import akka.actor.Props
 
 object Receiver {
   case class Important(text: String, seq: Int, id: Long)
@@ -15,6 +17,8 @@ object Receiver {
 
 class Receiver extends PersistentActor {
   import Receiver._
+  
+  val logger = context.actorOf(Props(new Logger), "logger")
 
   def log(msg: String) = println(s"[${LocalDateTime.now}]                                     recv: $msg")
 
@@ -32,6 +36,7 @@ class Receiver extends PersistentActor {
       if (seq < nextSeq) sender() ! Confirmed(seq, id)
       else if (seq == nextSeq) {
         persist(Appended(text)) { a =>
+          logger ! s"logging '$text'"
           words ::= text
         }
         persist(Confirmed(seq, id)) { c =>
@@ -51,4 +56,10 @@ class Receiver extends PersistentActor {
       words ::= text
   }
 
+}
+
+class Logger extends Actor {
+  def receive = {
+    case msg => println(msg)
+  }
 }
